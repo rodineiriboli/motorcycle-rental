@@ -1,0 +1,6 @@
+@MR.ConsumeNotification_HostAddress = http://localhost:5097
+
+GET {{MR.ConsumeNotification_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
