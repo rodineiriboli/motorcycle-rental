@@ -3,21 +3,22 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 5401
+EXPOSE 5401
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/services/MR.RentMotorcycle/MR.RentMotorcycle.csproj", "src/services/MR.RentMotorcycle/"]
-RUN dotnet restore "./src/services/MR.RentMotorcycle/MR.RentMotorcycle.csproj"
+COPY ["./services/MR.RentMotorcycle/MR.RentMotorcycle.csproj", "services/MR.RentMotorcycle/"]
+
+RUN dotnet restore "services/MR.RentMotorcycle/MR.RentMotorcycle.csproj"
 COPY . .
-WORKDIR "/src/src/services/MR.RentMotorcycle"
-RUN dotnet build "./MR.RentMotorcycle.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "services/MR.RentMotorcycle"
+RUN dotnet build "MR.RentMotorcycle.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MR.RentMotorcycle.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "MR.RentMotorcycle.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

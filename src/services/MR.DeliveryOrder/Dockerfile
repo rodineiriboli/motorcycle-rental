@@ -3,21 +3,22 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 5301
+EXPOSE 5301
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/services/MR.DeliveryOrder/MR.DeliveryOrder.csproj", "src/services/MR.DeliveryOrder/"]
-RUN dotnet restore "./src/services/MR.DeliveryOrder/MR.DeliveryOrder.csproj"
+COPY ["./services/MR.DeliveryOrder/MR.DeliveryOrder.csproj", "services/MR.DeliveryOrder/"]
+
+RUN dotnet restore "services/MR.DeliveryOrder/MR.DeliveryOrder.csproj"
 COPY . .
-WORKDIR "/src/src/services/MR.DeliveryOrder"
-RUN dotnet build "./MR.DeliveryOrder.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "services/MR.DeliveryOrder"
+RUN dotnet build "MR.DeliveryOrder.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MR.DeliveryOrder.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "MR.DeliveryOrder.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

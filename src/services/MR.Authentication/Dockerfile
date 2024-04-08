@@ -3,21 +3,22 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 5001
+EXPOSE 5001
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/services/MR.Authentication/MR.Authentication.csproj", "src/services/MR.Authentication/"]
-RUN dotnet restore "./src/services/MR.Authentication/MR.Authentication.csproj"
+COPY ["./services/MR.Authentication/MR.Authentication.csproj", "services/MR.Authentication/"]
+
+RUN dotnet restore "services/MR.Authentication/MR.Authentication.csproj"
 COPY . .
-WORKDIR "/src/src/services/MR.Authentication"
-RUN dotnet build "./MR.Authentication.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "services/MR.Authentication"
+RUN dotnet build "MR.Authentication.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MR.Authentication.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "MR.Authentication.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

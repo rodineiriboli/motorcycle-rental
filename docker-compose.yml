@@ -1,0 +1,108 @@
+volumes:
+  postgres-data: {}
+
+services:
+  motorcycle_rental-db:
+    container_name: motorcycle_rental-db
+    restart: always
+    image: postgres:11-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: motorcycle_rental_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mr_network
+
+  mr_rabbitmq:
+    container_name: mr_rabbitmq
+    image: rabbitmq:management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=motorcycle_rental
+      - RABBITMQ_DEFAULT_PASS=motorcycle_rental
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - mr_network
+  
+  mr-auth:
+    image: motorcycle-rental-auth:latest
+    container_name: motorcycle-rental-auth
+    build:
+      context: src
+      dockerfile: services/MR.Authentication/Dockerfile
+    ports:
+      - "5001:5001"
+      - "5003:5003"
+    networks:
+      - mr_network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:5001
+
+  mr-consume-notification:
+    image: motorcycle-rental-consume-notification:latest
+    container_name: motorcycle-rental-consume-notification
+    build:
+      context: src
+      dockerfile: services/MR.ConsumeNotification/Dockerfile
+    ports:
+      - "5101:5101"
+      - "5103:5103"
+    networks:
+      - mr_network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:5101
+
+  mr-motorcycle-registration:
+    image: motorcycle-rental-registration:latest
+    container_name: motorcycle-rental-registration
+    build:
+      context: src
+      dockerfile: services/MR.MotorcycleRegistration/Dockerfile
+    ports:
+      - "5201:5201"
+      - "5203:5203"
+    networks:
+      - mr_network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:5201
+
+  mr-delivery-order:
+    image: motorcycle-rental-delivery-order:latest
+    container_name: motorcycle-rental-delivery-order
+    build:
+      context: src
+      dockerfile: services/MR.DeliveryOrder/Dockerfile
+    ports:
+      - "5301:5301"
+      - "5303:5303"
+    networks:
+      - mr_network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:5301
+
+  mr-rent-motorcycle:
+    image: motorcycle-rental-rent-motorcycle:latest
+    container_name: motorcycle-rental-rent-motorcycle
+    build:
+      context: src
+      dockerfile: services/MR.RentMotorcycle/Dockerfile
+    ports:
+      - "5401:5401"
+      - "5403:5403"
+    networks:
+      - mr_network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:5401
+      
+networks:
+  mr_network:
+    driver: bridge

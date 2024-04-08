@@ -3,21 +3,22 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 5101
+EXPOSE 5101
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/services/MR.ConsumeNotification/MR.ConsumeNotification.csproj", "src/services/MR.ConsumeNotification/"]
-RUN dotnet restore "./src/services/MR.ConsumeNotification/MR.ConsumeNotification.csproj"
+COPY ["./services/MR.ConsumeNotification/MR.ConsumeNotification.csproj", "services/MR.ConsumeNotification/"]
+
+RUN dotnet restore "services/MR.ConsumeNotification/MR.ConsumeNotification.csproj"
 COPY . .
-WORKDIR "/src/src/services/MR.ConsumeNotification"
-RUN dotnet build "./MR.ConsumeNotification.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "services/MR.ConsumeNotification"
+RUN dotnet build "MR.ConsumeNotification.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MR.ConsumeNotification.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "MR.ConsumeNotification.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
