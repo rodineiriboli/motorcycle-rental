@@ -1,0 +1,6 @@
+@MR.User_HostAddress = http://localhost:5031
+
+GET {{MR.User_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
